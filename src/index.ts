@@ -6,6 +6,7 @@ import { UserDatabase } from "./data/UserDatabase";
 import { Authenticator } from "./services/Authenticator";
 import { HashManager } from "./services/HashManager";
 import moment from 'moment'
+import { RecipeDatabase } from "./data/RecipeDatabase";
 
 dotenv.config();
 
@@ -142,6 +143,10 @@ app.post("/recipe", async (req: Request, res: Response) => {
 
     const authenticator = new Authenticator();
     const tokenData = authenticator.getData(req.headers.authorization as string);
+
+    if (!req.body.title || !req.body.ingredients || !req.body.preparation_method ) {
+      throw new Error("Empty field");
+    } 
 
     const idGenerator = new IdGenerator()
     const id = idGenerator.generate()

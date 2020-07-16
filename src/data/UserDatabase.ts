@@ -1,4 +1,3 @@
-import knex from "knex";
 import { BaseDatabase } from "./BaseDatabase";
 import { USER_ROLES } from '../services/Authenticator'
 
