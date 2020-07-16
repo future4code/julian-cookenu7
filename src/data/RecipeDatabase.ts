@@ -10,7 +10,7 @@ export class RecipeDatabase extends BaseDatabase {
       title: string,
       ingredients: string,
       preparation_method: string,
-      creation_date: moment.Moment,
+      creation_date: string,
       creator_user_id: string,
     ): Promise<void> {
       await this.getConnection()
@@ -27,7 +27,7 @@ export class RecipeDatabase extends BaseDatabase {
       BaseDatabase.destroyConnection()
     }
 
-    public async getUserById(id: string): Promise<any> {
+    public async getRecipeById(id: string): Promise<any> {
       const result = await this.getConnection()
         .select("*")
         .from(RecipeDatabase.TABLE_NAME)
