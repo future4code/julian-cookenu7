@@ -6,6 +6,7 @@ import { UserDatabase } from "./data/UserDatabase";
 import { Authenticator } from "./services/Authenticator";
 import { HashManager } from "./services/HashManager";
 import moment from 'moment'
+import { RecipeDatabase } from "./data/RecipeDatabase";
 
 dotenv.config();
 
@@ -146,7 +147,7 @@ app.post("/recipe", async (req: Request, res: Response) => {
     const idGenerator = new IdGenerator()
     const id = idGenerator.generate()
 
-    const today = moment().format('YYYY-MM-DD')
+    const today = moment().format("YYYY-MM-DD")
 
     const recipeData = {
       title: req.body.title,
@@ -166,6 +167,31 @@ app.post("/recipe", async (req: Request, res: Response) => {
 
     res.status(200).send({
       message: "Recipe created"
+    })
+
+  } catch (err) {
+    res.status(400).send({
+      mesage: err.message
+    })
+  }
+})
+
+app.get("/recipe/:id", async (req: Request, res: Response) => {
+  try {
+
+    const authenticator = new Authenticator();
+    authenticator.getData(req.headers.authorization as string);
+
+    const recipeDb = new RecipeDatabase()
+    const recipe = await recipeDb.getRecipeById(req.params.id)
+    const createdAt = moment(recipe.creation_date).format("DD/MM/YYYY")
+
+    res.status(200).send({
+      id: recipe.id,
+      title: recipe.title,
+      ingredients: recipe.ingredients,
+      preparation_method: recipe.preparation_method,
+      creation_date: createdAt
     })
 
   } catch (err) {
