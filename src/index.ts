@@ -5,6 +5,7 @@ import { IdGenerator } from "./services/IdGenerator";
 import { UserDatabase } from "./data/UserDatabase";
 import { Authenticator } from "./services/Authenticator";
 import { HashManager } from "./services/HashManager";
+import moment from 'moment'
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ app.use(express.json());
 
 app.post("/signup", async (req: Request, res: Response) => {
   try {
-    
+
     if (!req.body.email || req.body.email.indexOf("@") === -1) {
       throw new Error("Invalid email");
     }
@@ -56,7 +57,7 @@ app.post("/signup", async (req: Request, res: Response) => {
 
 app.post("/login", async (req: Request, res: Response) => {
   try {
-    
+
     if (!req.body.email || req.body.email.indexOf("@") === -1) {
       throw new Error("Invalid email");
     }
@@ -92,21 +93,23 @@ app.post("/login", async (req: Request, res: Response) => {
   }
 });
 
-app.delete("/user/:id", async (req: Request, res: Response) => {
+app.get("/user/profile", async (req: Request, res: Response) => {
+
   try {
-    const authenticator = new Authenticator()
-    const tokenData = authenticator.getData(req.headers.authorization as string)
 
-    if (tokenData.role !== "ADMIN") {
-      throw new Error("Apenas administradores podem deletar outro usuário")
-    }
+    const authenticator = new Authenticator();
+    const tokenData = authenticator.getData(req.headers.authorization as string);
 
-    const userDB = new UserDatabase()
-    await userDB.deleteUser(req.params.id)
+    const userDb = new UserDatabase();
+
+    const user = await userDb.getUserById(tokenData.id);
 
     res.status(200).send({
-      message: "Usuário deletado"
-    })
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    });
   } catch (err) {
     res.status(400).send({
       message: err.message,
@@ -134,29 +137,67 @@ app.get("/user/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/user/profile", async (req: Request, res: Response) => {
+app.post("/recipe", async (req: Request, res: Response) => {
   try {
+
     const authenticator = new Authenticator();
     const tokenData = authenticator.getData(req.headers.authorization as string);
 
-    if(tokenData.role !== "NORMAL") {
-      throw new Error("Unauthorized")
+    const idGenerator = new IdGenerator()
+    const id = idGenerator.generate()
+
+    const today = moment().format('YYYY-MM-DD')
+
+    const recipeData = {
+      title: req.body.title,
+      ingredients: req.body.ingredients,
+      preparation_method: req.body.preparation_method
     }
 
-    const userDb = new UserDatabase();
-    const user = await userDb.getUserById(tokenData.id);
+    const recipeDb = new RecipeDatabase()
+    await recipeDb.createRecipe(
+      id,
+      recipeData.title,
+      recipeData.ingredients,
+      recipeData.preparation_method,
+      today,
+      tokenData.id
+    )
 
     res.status(200).send({
-      id: user.id,
-      email: user.email,
-      role: user.role
-    });
+      message: "Recipe created"
+    })
+
+  } catch (err) {
+    res.status(400).send({
+      mesage: err.message
+    })
+  }
+})
+
+app.delete("/user/:id", async (req: Request, res: Response) => {
+  try {
+    const authenticator = new Authenticator()
+    const tokenData = authenticator.getData(req.headers.authorization as string)
+
+    if (tokenData.role !== "ADMIN") {
+      throw new Error("Apenas administradores podem deletar outro usuário")
+    }
+
+    const userDB = new UserDatabase()
+    await userDB.deleteUser(req.params.id)
+
+    res.status(200).send({
+      message: "Usuário deletado"
+    })
   } catch (err) {
     res.status(400).send({
       message: err.message,
     });
   }
 });
+
+
 
 const server = app.listen(process.env.PORT || 3003, () => {
   if (server) {
