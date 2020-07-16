@@ -33,8 +33,7 @@ export class UserDatabase extends BaseDatabase {
       .where({ email });
 
     BaseDatabase.destroyConnection()
-
-    return result[0];
+     return result[0];
   }
 
   public async getUserById(id: string): Promise<any> {
@@ -44,7 +43,7 @@ export class UserDatabase extends BaseDatabase {
       .where({ id });
 
     BaseDatabase.destroyConnection()
-
+    
     return result[0];
   }
 
