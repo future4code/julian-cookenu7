@@ -14,8 +14,6 @@ export class FollowDatabase extends BaseDatabase {
         following_id
       })
       .into(FollowDatabase.TABLE_NAME);
-
-    BaseDatabase.destroyConnection()
   }
 
   public async getFollowById(id: string): Promise<any> {
@@ -25,16 +23,19 @@ export class FollowDatabase extends BaseDatabase {
       .from(FollowDatabase.TABLE_NAME)
       .where({ id });
 
-    BaseDatabase.destroyConnection()
-     
     return result[0];
-}
-    public async deleteUser(id: string): Promise<void> {
-      await this.getConnection().raw(`
+  }
+
+  public async deleteUser(
+    follower_id: string,
+    following_id: string
+  ): Promise<void> {
+
+    await this.getConnection().raw(`
       DELETE FROM ${FollowDatabase.TABLE_NAME}
-      WHERE id = "${id}"
+      WHERE follower_id = "${follower_id}"
+      AND following_id = "${following_id}"
       `)
 
-      BaseDatabase.destroyConnection()
-    }
+  }
 }
