@@ -21,8 +21,6 @@ export class UserDatabase extends BaseDatabase {
         role
       })
       .into(UserDatabase.TABLE_NAME);
-
-    BaseDatabase.destroyConnection()
   }
 
   public async getUserByEmail(email: string): Promise<any> {
@@ -31,7 +29,6 @@ export class UserDatabase extends BaseDatabase {
       .from(UserDatabase.TABLE_NAME)
       .where({ email });
 
-    BaseDatabase.destroyConnection()
      return result[0];
   }
 
@@ -42,8 +39,6 @@ export class UserDatabase extends BaseDatabase {
       .from(UserDatabase.TABLE_NAME)
       .where({ id });
 
-    BaseDatabase.destroyConnection()
-    
     return result[0];
   }
 
@@ -52,7 +47,5 @@ export class UserDatabase extends BaseDatabase {
     DELETE FROM ${UserDatabase.TABLE_NAME}
     WHERE id = "${id}"
     `)
-
-    BaseDatabase.destroyConnection()
   }
 }
