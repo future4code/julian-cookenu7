@@ -26,7 +26,15 @@ export class FollowDatabase extends BaseDatabase {
       .where({ id });
 
     BaseDatabase.destroyConnection()
-
+     
     return result[0];
-  }
+}
+    public async deleteUser(id: string): Promise<void> {
+      await this.getConnection().raw(`
+      DELETE FROM ${FollowDatabase.TABLE_NAME}
+      WHERE id = "${id}"
+      `)
+
+      BaseDatabase.destroyConnection()
+    }
 }

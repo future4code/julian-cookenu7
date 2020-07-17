@@ -126,6 +126,8 @@ app.get("/user/profile", async (req: Request, res: Response) => {
   await BaseDatabase.destroyConnection()
 });
 
+
+
 app.post("/recipe", async (req: Request, res: Response) => {
   try {
 
@@ -283,6 +285,26 @@ app.delete("/user/:id", async (req: Request, res: Response) => {
   }
 
   await BaseDatabase.destroyConnection()
+});
+
+app.post("/user/unfollow", async (req: Request, res: Response) => {
+  try {
+    const authenticator = new Authenticator();
+     authenticator.getData(req.headers.authorization as string);
+
+    const userUnFollowingIdDb = req.body.userToUnfollowId
+
+    const userFollowing = new UserDatabase();
+    const userFollowingIdDb = await userFollowing.getUserById(userUnFollowingIdDb);
+
+    res.status(200).send({
+      message: "Unfollowing"
+    });
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
 });
 
 
