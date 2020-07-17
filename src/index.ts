@@ -126,8 +126,6 @@ app.get("/user/profile", async (req: Request, res: Response) => {
   await BaseDatabase.destroyConnection()
 });
 
-
-
 app.post("/recipe", async (req: Request, res: Response) => {
   try {
 
@@ -192,7 +190,30 @@ app.get("/recipe/:id", async (req: Request, res: Response) => {
 
   } catch (err) {
     res.status(400).send({
-      mesage: err.message
+      message: err.message
+    })
+  }
+
+  await BaseDatabase.destroyConnection()
+})
+
+app.get("/feed", async (req: Request, res: Response) => {
+  try {
+    const authenticator = new Authenticator()
+    authenticator.getData(req.headers.authorization as string)
+
+    const recipesDb = new RecipeDatabase()
+    const recipes = await recipesDb.getRecipes()
+    //const recipesFormated = {...recipes,
+    //creation_date: moment(recipes.creation_date, "YYYY-MM-DD").format("DD/MM/YYYY")}
+
+    res.status(200).send({
+      recipes
+      //recipesFormated
+    })
+  } catch (err) {
+    res.status(400).send({
+      message: err.message
     })
   }
 
@@ -240,6 +261,30 @@ app.post("/user/follow", async (req: Request, res: Response) => {
   await BaseDatabase.destroyConnection()
 })
 
+app.post("/user/unfollow", async (req: Request, res: Response) => {
+  try {
+    const authenticator = new Authenticator();
+    const tokenData = authenticator.getData(req.headers.authorization as string);
+    const followerId = tokenData.id
+
+    const userUnFollowingId = req.body.userToUnfollowId
+
+    const userFollowing = new FollowDatabase()
+    await userFollowing.deleteUser(followerId, userUnFollowingId)
+
+    res.status(200).send({
+      message: "Unfollowing"
+    });
+
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
+
+  await BaseDatabase.destroyConnection()
+});
+
 app.get("/user/:id", async (req: Request, res: Response) => {
   try {
     const authenticator = new Authenticator();
@@ -286,28 +331,6 @@ app.delete("/user/:id", async (req: Request, res: Response) => {
 
   await BaseDatabase.destroyConnection()
 });
-
-app.post("/user/unfollow", async (req: Request, res: Response) => {
-  try {
-    const authenticator = new Authenticator();
-     authenticator.getData(req.headers.authorization as string);
-
-    const userUnFollowingIdDb = req.body.userToUnfollowId
-
-    const userFollowing = new UserDatabase();
-    const userFollowingIdDb = await userFollowing.getUserById(userUnFollowingIdDb);
-
-    res.status(200).send({
-      message: "Unfollowing"
-    });
-  } catch (err) {
-    res.status(400).send({
-      message: err.message,
-    });
-  }
-});
-
-
 
 const server = app.listen(process.env.PORT || 3003, () => {
   if (server) {
