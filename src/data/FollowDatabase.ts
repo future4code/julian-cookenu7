@@ -15,8 +15,9 @@ export class FollowDatabase extends BaseDatabase {
       })
       .into(FollowDatabase.TABLE_NAME);
 
-    BaseDatabase.destroyConnection()  
+    BaseDatabase.destroyConnection()
   }
+
   public async getFollowById(id: string): Promise<any> {
 
     const result = await this.getConnection()
@@ -25,7 +26,7 @@ export class FollowDatabase extends BaseDatabase {
       .where({ id });
 
     BaseDatabase.destroyConnection()
-    
+
     return result[0];
-}
+  }
 }

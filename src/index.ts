@@ -7,6 +7,8 @@ import { Authenticator } from "./services/Authenticator";
 import { HashManager } from "./services/HashManager";
 import moment from 'moment'
 import { RecipeDatabase } from "./data/RecipeDatabase";
+import { FollowDatabase } from "./data/FollowDatabase";
+import { BaseDatabase } from "./data/BaseDatabase";
 
 dotenv.config();
 
@@ -54,6 +56,8 @@ app.post("/signup", async (req: Request, res: Response) => {
       message: err.message,
     });
   }
+
+  await BaseDatabase.destroyConnection()
 });
 
 app.post("/login", async (req: Request, res: Response) => {
@@ -92,6 +96,8 @@ app.post("/login", async (req: Request, res: Response) => {
       message: err.message,
     });
   }
+
+  await BaseDatabase.destroyConnection()
 });
 
 app.get("/user/profile", async (req: Request, res: Response) => {
@@ -116,26 +122,8 @@ app.get("/user/profile", async (req: Request, res: Response) => {
       message: err.message,
     });
   }
-});
 
-app.get("/user/:id", async (req: Request, res: Response) => {
-  try {
-    const authenticator = new Authenticator();
-    const tokenData = authenticator.getData(req.headers.authorization as string);
-
-    const userDb = new UserDatabase();
-    const user = await userDb.getUserById(req.params.id);
-
-    res.status(200).send({
-      id: user.id,
-      name: user.name,
-      email: user.email
-    });
-  } catch (err) {
-    res.status(400).send({
-      message: err.message,
-    });
-  }
+  await BaseDatabase.destroyConnection()
 });
 
 app.post("/recipe", async (req: Request, res: Response) => {
@@ -144,9 +132,9 @@ app.post("/recipe", async (req: Request, res: Response) => {
     const authenticator = new Authenticator();
     const tokenData = authenticator.getData(req.headers.authorization as string);
 
-    if (!req.body.title || !req.body.ingredients || !req.body.preparation_method ) {
+    if (!req.body.title || !req.body.ingredients || !req.body.preparation_method) {
       throw new Error("Empty field");
-    } 
+    }
 
     const idGenerator = new IdGenerator()
     const id = idGenerator.generate()
@@ -175,9 +163,11 @@ app.post("/recipe", async (req: Request, res: Response) => {
 
   } catch (err) {
     res.status(400).send({
-      mesage: err.message
+      message: err.message
     })
   }
+
+  await BaseDatabase.destroyConnection()
 })
 
 app.get("/recipe/:id", async (req: Request, res: Response) => {
@@ -203,10 +193,76 @@ app.get("/recipe/:id", async (req: Request, res: Response) => {
       mesage: err.message
     })
   }
+
+  await BaseDatabase.destroyConnection()
 })
+
+app.post("/user/follow", async (req: Request, res: Response) => {
+  try {
+
+    const authenticator = new Authenticator()
+    const tokenData = authenticator.getData(req.headers.authorization as string)
+
+    if (!req.body.userToFollowId) {
+      throw new Error("Empty field")
+    }
+
+    const userToFollowId = req.body.userToFollowId
+
+    const userToFollowDb = new UserDatabase()
+    const userToFollowIdDb = await userToFollowDb.getUserById(userToFollowId)
+
+    if (!userToFollowIdDb) {
+      throw new Error("Invalid Id")
+    }
+
+    console.log(tokenData.id)
+    console.log(userToFollowId)
+
+    const followDb = new FollowDatabase()
+    await followDb.followUser(
+      tokenData.id,
+      userToFollowId
+    )
+
+    res.status(200).send({
+      message: "Followed sucessfully"
+    })
+
+  } catch (err) {
+    res.status(400).send({
+      message: err.message
+    })
+  }
+
+  await BaseDatabase.destroyConnection()
+})
+
+app.get("/user/:id", async (req: Request, res: Response) => {
+  try {
+    const authenticator = new Authenticator();
+    authenticator.getData(req.headers.authorization as string);
+
+    const userDb = new UserDatabase();
+    const user = await userDb.getUserById(req.params.id);
+
+    res.status(200).send({
+      id: user.id,
+      name: user.name,
+      email: user.email
+    });
+  } catch (err) {
+    res.status(400).send({
+      message: err.message,
+    });
+  }
+
+  await BaseDatabase.destroyConnection()
+});
 
 app.delete("/user/:id", async (req: Request, res: Response) => {
   try {
+
     const authenticator = new Authenticator()
     const tokenData = authenticator.getData(req.headers.authorization as string)
 
@@ -225,6 +281,8 @@ app.delete("/user/:id", async (req: Request, res: Response) => {
       message: err.message,
     });
   }
+
+  await BaseDatabase.destroyConnection()
 });
 
 

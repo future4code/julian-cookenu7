@@ -24,7 +24,6 @@ export class RecipeDatabase extends BaseDatabase {
       })
       .into(RecipeDatabase.TABLE_NAME);
 
-      BaseDatabase.destroyConnection()
     }
 
     public async getRecipeById(id: string): Promise<any> {
@@ -32,8 +31,6 @@ export class RecipeDatabase extends BaseDatabase {
         .select("*")
         .from(RecipeDatabase.TABLE_NAME)
         .where({ id });
-
-        BaseDatabase.destroyConnection()
 
         return result[0];
     }  
