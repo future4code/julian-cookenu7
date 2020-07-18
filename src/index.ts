@@ -203,13 +203,15 @@ app.get("/feed", async (req: Request, res: Response) => {
     authenticator.getData(req.headers.authorization as string)
 
     const recipesDb = new RecipeDatabase()
-    const recipes = await recipesDb.getRecipes()
-    //const recipesFormated = {...recipes,
-    //creation_date: moment(recipes.creation_date, "YYYY-MM-DD").format("DD/MM/YYYY")}
+    const recipesFeed = await recipesDb.getRecipes()
+    
+    const recipes = recipesFeed.map((recipe: any) => {
+      recipe.creation_date = moment(recipe.creation_date).format("DD/MM/YYYY")
+      return recipe
+    })
 
     res.status(200).send({
       recipes
-      //recipesFormated
     })
   } catch (err) {
     res.status(400).send({
